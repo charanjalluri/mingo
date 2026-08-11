@@ -65,3 +65,68 @@ This occurred because:
 ## Configuration Changes
 - `BACKEND_CORS_ORIGINS` set to `["http://localhost:5173","http://127.0.0.1:5173","http://localhost:8000","http://127.0.0.1:8000","*"]`.
 - `is_origin_allowed` in `ConnectionManager` now permits same-origin requests dynamically based on Host header matching.
+
+---
+
+# Production Verification Audit Status: FAILED ❌
+
+## Audit Overview
+- **Audit Timestamp**: 2026-08-11T20:03:57+05:30
+- **GitHub Main Branch Commit**: `1ebbdcaf52577ca87340f741469b97d6b7defe1d` (`1ebbdca`)
+- **Target Production URL**: `https://mingo-app.onrender.com`
+- **Verification Result**: **FAILED** (Public deployment is serving an unrelated service instead of the Mingo application)
+
+---
+
+## Failure Details & Evidence
+
+### 1. Target URL Serving Wrong Application
+- **Expected**: Public deployment at `https://mingo-app.onrender.com` serves the Mingo Single-Page Application (FastAPI + React frontend) running commit `1ebbdcaf52577ca87340f741469b97d6b7defe1d`.
+- **Actual**: All HTTP requests to `https://mingo-app.onrender.com` (including `/`, `/index.html`, `/api/auth/login`, `/ws`) return HTTP 200 OK with plain text response:
+  ```text
+  Mingo push notifier is running.
+  ```
+- **Evidence**:
+  - `curl -i https://mingo-app.onrender.com`:
+    ```http
+    HTTP/1.1 200 OK
+    Date: Tue, 11 Aug 2026 14:37:26 GMT
+    Content-Type: text/plain; charset=utf-8
+    x-render-origin-server: Render
+    Server: cloudflare
+
+    Mingo push notifier is running.
+    ```
+  - `curl -i https://mingo-app.onrender.com/index.html` and `curl -i https://mingo-app.onrender.com/api/auth/login` yield the identical plain text response.
+  - Browser inspection via `browser_subagent` navigated to `https://mingo-app.onrender.com` and confirmed that only plain text `"Mingo push notifier is running."` renders, with no Mingo UI, login forms, or SPA assets.
+  - Screenshot captured during audit: `mingo_homepage_1786459229580.png`.
+
+### 2. Real-Time Messaging & WebSocket Handshake Blocked
+- Because `https://mingo-app.onrender.com` hosts an unrelated service ("Mingo push notifier"), neither Charan nor Ravi could log in or establish authenticated WebSocket connections (`wss://mingo-app.onrender.com/ws`).
+- Live two-way message exchange (Charan <-> Ravi without refreshing) could not be completed on the production instance.
+
+---
+
+## Action Taken
+Per strict instructions:
+1. No application code or feature changes were performed.
+2. The exact failure, evidence, and diagnostics were recorded in [BUG.md](file:///d:/fourchat/BUG.md).
+3. Production deployment verification is **not claimed as successful**.
+
+---
+
+## Deployment Diagnosis & Root Cause Hypothesis
+
+### Root Cause Analysis
+1. **Repository Disconnect / Stray Service on Render**:
+   The URL `https://mingo-app.onrender.com` is currently bound to a legacy or unrelated Render service named "Mingo push notifier". That service is not linked to the `https://github.com/charanjalluri/mingo.git` repository or is running a separate build target.
+2. **Render Blueprint Specification Ambiguity**:
+   The existing `render.yaml` omitted `dockerContext: .` and used `env: docker` instead of the standard `runtime: docker`. Without `dockerContext: .`, Render might fail to set the repo root as the Docker context when building `Dockerfile`.
+3. **Redundant `backend/Dockerfile`**:
+   `backend/Dockerfile` duplicated root `Dockerfile` instructions (which reference `frontend/package*.json`). If Render's web service setting is configured with Root Directory `backend`, building `backend/Dockerfile` from the `backend` context fails due to invalid relative paths.
+
+### Corrective Action Plan
+1. Update `render.yaml` to specify `runtime: docker`, `dockerfilePath: Dockerfile`, and `dockerContext: .`.
+2. Remove redundant `backend/Dockerfile` to avoid build context confusion on Render.
+3. Push deployment configuration changes to `origin/main`.
+4. Trigger a Manual Blueprint Sync or Manual Redeploy in the Render Dashboard targeting `https://github.com/charanjalluri/mingo.git`.
