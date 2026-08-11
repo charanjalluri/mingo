@@ -84,8 +84,12 @@ app.include_router(conversations.router, prefix=settings.API_V1_STR)
 app.include_router(messages.router, prefix=settings.API_V1_STR)
 app.include_router(uploads.router, prefix=settings.API_V1_STR)
 
-frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
-if os.path.exists(frontend_dist):
+frontend_dist_docker = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+frontend_dist_local = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+
+frontend_dist = frontend_dist_docker if os.path.exists(frontend_dist_docker) else (frontend_dist_local if os.path.exists(frontend_dist_local) else None)
+
+if frontend_dist:
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="static_assets")
 
     @app.get("/{full_path:path}")
