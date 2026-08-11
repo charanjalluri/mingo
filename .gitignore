@@ -1,0 +1,18 @@
+# Environment variables
+.env
+
+# SQLite Database & Uploads
+*.db
+fourchat.db
+mingo.db
+backend/uploads/
+
+# Python
+backend/venv/
+backend/__pycache__/
+*.pyc
+
+# Node & Frontend Build
+frontend/node_modules/
+frontend/dist/
+.DS_Store
