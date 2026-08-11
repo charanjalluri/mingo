@@ -97,6 +97,10 @@ if os.path.exists(frontend_dist):
         file_path = os.path.join(frontend_dist, full_path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
+        if full_path == "favicon.ico":
+            svg_path = os.path.join(frontend_dist, "favicon.svg")
+            if os.path.isfile(svg_path):
+                return FileResponse(svg_path, media_type="image/svg+xml")
         return FileResponse(os.path.join(frontend_dist, "index.html"))
 else:
     @app.get("/")
