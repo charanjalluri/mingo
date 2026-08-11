@@ -65,3 +65,61 @@ async def test_auth_and_conversations():
         # 9. Invalid login test
         bad_login = await ac.post("/api/auth/login", json={"username": "charan", "password": "wrongpassword"})
         assert bad_login.status_code == 401
+
+
+def test_websocket_realtime_broadcast():
+    from fastapi.testclient import TestClient
+    import asyncio
+
+    asyncio.run(reset_database())
+
+    with TestClient(app) as client:
+        # Login Charan
+        res_a = client.post("/api/auth/login", json={"username": "charan", "password": "mg-charan-8921"})
+        assert res_a.status_code == 200
+        token_a = res_a.json()["access_token"]
+
+        # Login Ravi
+        res_b = client.post("/api/auth/login", json={"username": "ravi", "password": "mg-ravi-4712"})
+        assert res_b.status_code == 200
+        token_b = res_b.json()["access_token"]
+
+        # Get Mingo Squad conversation ID
+        convs = client.get("/api/conversations", headers={"Authorization": f"Bearer {token_a}"}).json()
+        squad_id = next(c["id"] for c in convs if c["type"] == "group")
+
+        def receive_message_content(ws, expected_content):
+            for _ in range(10):
+                evt = ws.receive_json()
+                if evt.get("type") == "new_message" and evt.get("payload", {}).get("content") == expected_content:
+                    return evt
+            raise AssertionError(f"Expected message content '{expected_content}' not received")
+
+        # Connect Charan & Ravi WebSockets from production HTTPS origin
+        with client.websocket_connect(f"/ws?token={token_a}", headers={"origin": "https://mingo-app.onrender.com"}) as ws_a, \
+             client.websocket_connect(f"/ws?token={token_b}", headers={"origin": "https://mingo-app.onrender.com"}) as ws_b:
+            
+            # Send message from Charan (User A)
+            send_res_a = client.post("/api/messages", json={
+                "conversation_id": squad_id,
+                "content": "Hi Ravi! Live WebSocket test.",
+                "message_type": "text"
+            }, headers={"Authorization": f"Bearer {token_a}"})
+            assert send_res_a.status_code == 200
+
+            # Receive on Ravi's (User B) WebSocket
+            event_b = receive_message_content(ws_b, "Hi Ravi! Live WebSocket test.")
+            assert event_b["payload"]["content"] == "Hi Ravi! Live WebSocket test."
+
+            # Send message back from Ravi (User B)
+            send_res_b = client.post("/api/messages", json={
+                "conversation_id": squad_id,
+                "content": "Hii Charan! Got your message live.",
+                "message_type": "text"
+            }, headers={"Authorization": f"Bearer {token_b}"})
+            assert send_res_b.status_code == 200
+
+            # Receive on Charan's (User A) WebSocket
+            event_a = receive_message_content(ws_a, "Hii Charan! Got your message live.")
+            assert event_a["payload"]["content"] == "Hii Charan! Got your message live."
+

@@ -21,7 +21,14 @@ class Settings(BaseSettings):
     ALLOWED_AUDIO_TYPES: list[str] = ["audio/webm", "audio/ogg", "audio/wav", "audio/mp3", "audio/mpeg", "audio/m4a"]
 
     # CORS
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"]
+    BACKEND_CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:8000",
+        "*"
+    ]
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="allow")
 

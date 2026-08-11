@@ -65,13 +65,25 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # CORS Middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
-)
+cors_origins = [o for o in settings.BACKEND_CORS_ORIGINS if o != "*"]
+allow_all = "*" in settings.BACKEND_CORS_ORIGINS
+
+if allow_all:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"https?://.*",
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
 
 # Static Files for Uploads
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)

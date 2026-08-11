@@ -114,6 +114,10 @@ async def search_messages(
     return result
 
 
+import logging
+
+logger = logging.getLogger("mingo.messages")
+
 @router.post("", response_model=MessagePublic)
 async def create_message(
     body: MessageCreate,
@@ -121,6 +125,7 @@ async def create_message(
     db: AsyncSession = Depends(get_db)
 ):
     await check_user_in_conversation(current_user.id, body.conversation_id, db)
+    logger.info(f"message_received(sender_id={current_user.id}, conversation_id={body.conversation_id})")
 
     if not body.content and not body.media_url:
         raise HTTPException(status_code=400, detail="Message must contain text content or media")
@@ -158,15 +163,21 @@ async def create_message(
 
     await db.commit()
     await db.refresh(new_msg)
+    logger.info(f"message_persisted(message_id={new_msg.id})")
 
     pub_msg = await build_message_public(new_msg, db)
 
     # Broadcast via WebSocket to all conversation participants
     participant_user_ids = await get_participant_user_ids(body.conversation_id, db)
-    await manager.broadcast_to_users({
-        "type": "new_message",
-        "payload": pub_msg.model_dump(mode="json")
-    }, participant_user_ids)
+    await manager.broadcast_to_users(
+        {
+            "type": "new_message",
+            "payload": pub_msg.model_dump(mode="json")
+        },
+        participant_user_ids,
+        sender_id=current_user.id,
+        conversation_id=body.conversation_id
+    )
 
     return pub_msg
 
@@ -199,10 +210,15 @@ async def edit_message(
     pub_msg = await build_message_public(msg, db)
 
     participant_user_ids = await get_participant_user_ids(msg.conversation_id, db)
-    await manager.broadcast_to_users({
-        "type": "message_updated",
-        "payload": pub_msg.model_dump(mode="json")
-    }, participant_user_ids)
+    await manager.broadcast_to_users(
+        {
+            "type": "message_updated",
+            "payload": pub_msg.model_dump(mode="json")
+        },
+        participant_user_ids,
+        sender_id=current_user.id,
+        conversation_id=msg.conversation_id
+    )
 
     return pub_msg
 
@@ -230,13 +246,18 @@ async def delete_message(
     await db.commit()
 
     participant_user_ids = await get_participant_user_ids(msg.conversation_id, db)
-    await manager.broadcast_to_users({
-        "type": "message_deleted",
-        "payload": {
-            "message_id": message_id,
-            "conversation_id": msg.conversation_id
-        }
-    }, participant_user_ids)
+    await manager.broadcast_to_users(
+        {
+            "type": "message_deleted",
+            "payload": {
+                "message_id": message_id,
+                "conversation_id": msg.conversation_id
+            }
+        },
+        participant_user_ids,
+        sender_id=current_user.id,
+        conversation_id=msg.conversation_id
+    )
 
     return {"detail": "Message deleted"}
 
@@ -284,13 +305,18 @@ async def toggle_reaction(
     pub_msg = await build_message_public(msg, db)
 
     participant_user_ids = await get_participant_user_ids(msg.conversation_id, db)
-    await manager.broadcast_to_users({
-        "type": "reaction_updated",
-        "payload": {
-            "message_id": message_id,
-            "conversation_id": msg.conversation_id,
-            "reactions": [r.model_dump(mode="json") for r in pub_msg.reactions]
-        }
-    }, participant_user_ids)
+    await manager.broadcast_to_users(
+        {
+            "type": "reaction_updated",
+            "payload": {
+                "message_id": message_id,
+                "conversation_id": msg.conversation_id,
+                "reactions": [r.model_dump(mode="json") for r in pub_msg.reactions]
+            }
+        },
+        participant_user_ids,
+        sender_id=current_user.id,
+        conversation_id=msg.conversation_id
+    )
 
     return {"reactions": pub_msg.reactions}

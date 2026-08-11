@@ -55,7 +55,9 @@ async def get_current_user_ws(
 ) -> User | None:
     if not token:
         token = websocket.query_params.get("token")
-    
+    if not token:
+        token = websocket.cookies.get("mingo_session") or websocket.cookies.get("fourchat_session")
+
     if not token:
         return None
 
