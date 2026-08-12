@@ -76,6 +76,7 @@ export const LoginModal: React.FC = () => {
           </div>
           <button
             onClick={toggleTheme}
+            className="interactive-btn press-scale-sm"
             style={{
               padding: '8px',
               borderRadius: 'var(--radius-md)',
@@ -159,6 +160,7 @@ export const LoginModal: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
+            className="press-scale-sm"
             style={{
               width: '100%',
               padding: '12px',
@@ -172,8 +174,7 @@ export const LoginModal: React.FC = () => {
               justifyContent: 'center',
               gap: '8px',
               marginTop: '6px',
-              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-              transition: 'background-color 0.15s ease'
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)'
             }}
           >
             {submitting ? 'Authenticating...' : (

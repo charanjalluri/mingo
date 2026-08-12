@@ -10,6 +10,7 @@ export const NewMessagesBadge: React.FC<NewMessagesBadgeProps> = ({ unreadCount 
   return (
     <button
       onClick={onClick}
+      className="press-scale-sm"
       style={{
         position: 'absolute',
         bottom: '80px',

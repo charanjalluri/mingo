@@ -63,6 +63,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, duration, isSelf 
 
       <button
         onClick={togglePlay}
+        className="press-scale-sm interactive-btn"
         style={{
           width: '34px',
           height: '34px',

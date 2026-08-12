@@ -43,9 +43,19 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect();
+    }
+  };
+
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={handleKeyDown}
       style={{
         padding: '12px 14px',
         borderRadius: 'var(--radius-md)',
@@ -55,7 +65,6 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
         alignItems: 'center',
         gap: '12px',
         cursor: 'pointer',
-        transition: 'background-color 0.15s ease',
         userSelect: 'none'
       }}
       className="conversation-item-hover"

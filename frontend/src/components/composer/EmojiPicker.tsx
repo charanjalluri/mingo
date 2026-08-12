@@ -43,6 +43,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect }) => {
         <button
           key={i}
           onClick={() => onSelect(emoji)}
+          className="press-scale-xs interactive-btn"
           style={{
             fontSize: '1.2rem',
             padding: '4px',

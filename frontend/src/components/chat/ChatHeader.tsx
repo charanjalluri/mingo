@@ -54,7 +54,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         {onBackMobile && (
           <button
             onClick={onBackMobile}
+            className="interactive-btn"
             style={{ padding: '6px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}
+            title="Back to conversations"
           >
             <ArrowLeft size={22} />
           </button>
@@ -113,6 +115,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <button
           onClick={onToggleSearch}
+          className="interactive-btn"
           style={{ padding: '8px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}
           title="Search messages"
         >

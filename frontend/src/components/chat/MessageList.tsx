@@ -72,16 +72,47 @@ export const MessageList: React.FC<MessageListProps> = ({
     prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
-  // Group messages by date
+  // Group messages by date and sender sequence
   const renderItems = () => {
     const items: React.ReactNode[] = [];
     let lastDateStr = '';
+    const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
-    messages.forEach((msg) => {
+    messages.forEach((msg, index) => {
       const dateStr = formatDateDivider(msg.created_at);
-      if (dateStr !== lastDateStr) {
+      const isNewDate = dateStr !== lastDateStr;
+
+      if (isNewDate) {
         items.push(<DateSeparator key={`date-${msg.id}`} isoString={msg.created_at} />);
         lastDateStr = dateStr;
+      }
+
+      const prevMsg = index > 0 ? messages[index - 1] : null;
+      const nextMsg = index < messages.length - 1 ? messages[index + 1] : null;
+      const msgTime = new Date(msg.created_at).getTime();
+
+      const isSameSenderAsPrev = Boolean(
+        !isNewDate &&
+        prevMsg &&
+        prevMsg.sender_id === msg.sender_id &&
+        (msgTime - new Date(prevMsg.created_at).getTime() <= FIVE_MINUTES_MS)
+      );
+
+      const isNextNewDate = nextMsg ? formatDateDivider(nextMsg.created_at) !== dateStr : true;
+      const isSameSenderAsNext = Boolean(
+        !isNextNewDate &&
+        nextMsg &&
+        nextMsg.sender_id === msg.sender_id &&
+        (new Date(nextMsg.created_at).getTime() - msgTime <= FIVE_MINUTES_MS)
+      );
+
+      let sequencePosition: 'single' | 'first' | 'middle' | 'last' = 'single';
+      if (isSameSenderAsPrev && isSameSenderAsNext) {
+        sequencePosition = 'middle';
+      } else if (!isSameSenderAsPrev && isSameSenderAsNext) {
+        sequencePosition = 'first';
+      } else if (isSameSenderAsPrev && !isSameSenderAsNext) {
+        sequencePosition = 'last';
       }
 
       items.push(
@@ -89,6 +120,7 @@ export const MessageList: React.FC<MessageListProps> = ({
           key={msg.id}
           message={msg}
           isGroup={isGroup}
+          sequencePosition={sequencePosition}
           onReply={onReply}
           onReaction={onReaction}
           onEdit={onEdit}

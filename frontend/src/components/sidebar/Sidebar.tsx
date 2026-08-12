@@ -60,8 +60,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         justifyContent: 'space-between'
       }}>
         <div
+          role="button"
+          tabIndex={0}
           onClick={onOpenProfile}
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onOpenProfile();
+            }
+          }}
+          className="press-scale-sm"
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '4px', borderRadius: 'var(--radius-md)' }}
           title="Open Profile Settings"
         >
           <img
@@ -80,6 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <button
             onClick={() => setShowMemberSelector((prev) => !prev)}
+            className="interactive-btn"
             style={{ padding: '8px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}
             title="Start Direct Chat"
           >
@@ -88,6 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={toggleTheme}
+            className="interactive-btn"
             style={{ padding: '8px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}
             title="Toggle theme"
           >
@@ -96,6 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={onOpenProfile}
+            className="interactive-btn"
             style={{ padding: '8px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)' }}
             title="Settings"
           >
@@ -104,6 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={logout}
+            className="interactive-btn"
             style={{ padding: '8px', borderRadius: 'var(--radius-md)', color: '#ef4444' }}
             title="Log out"
           >
@@ -131,6 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onStartDirectChat(u.id);
                   setShowMemberSelector(false);
                 }}
+                className="interactive-btn"
                 style={{
                   padding: '8px 10px',
                   borderRadius: 'var(--radius-md)',

@@ -37,6 +37,7 @@ export const Lightbox: React.FC<LightboxProps> = ({ src, onClose }) => {
             download="mingo_media"
             target="_blank"
             rel="noreferrer"
+            className="press-scale-sm interactive-btn"
             style={{
               padding: '8px',
               borderRadius: '50%',
@@ -53,6 +54,7 @@ export const Lightbox: React.FC<LightboxProps> = ({ src, onClose }) => {
 
           <button
             onClick={onClose}
+            className="press-scale-sm interactive-btn"
             style={{
               padding: '8px',
               borderRadius: '50%',

@@ -126,7 +126,27 @@ Per strict instructions:
    `backend/Dockerfile` duplicated root `Dockerfile` instructions (which reference `frontend/package*.json`). If Render's web service setting is configured with Root Directory `backend`, building `backend/Dockerfile` from the `backend` context fails due to invalid relative paths.
 
 ### Corrective Action Plan
-1. Update `render.yaml` to specify `runtime: docker`, `dockerfilePath: Dockerfile`, and `dockerContext: .`.
-2. Remove redundant `backend/Dockerfile` to avoid build context confusion on Render.
-3. Push deployment configuration changes to `origin/main`.
+1. Update `render.yaml` to specify `runtime: docker`, `dockerfilePath: Dockerfile`, and `dockerContext: .`. (Done in commit `55429dc`)
+2. Remove redundant `backend/Dockerfile` to avoid build context confusion on Render. (Done in commit `55429dc`)
+3. Push deployment configuration changes to `origin/main`. (Done in commit `55429dc`)
 4. Trigger a Manual Blueprint Sync or Manual Redeploy in the Render Dashboard targeting `https://github.com/charanjalluri/mingo.git`.
+
+---
+
+## Deployment Audit Re-Verification (2026-08-12)
+
+- **Latest Main Branch Commit**: `55429dcafee6db56073ceee71eb12ab60dcc5236`
+- **Target URL Check**: `curl -i https://mingo-app.onrender.com`
+  - Still returns `HTTP 200 OK` with plain text body: `Mingo push notifier is running.`
+  - Headers confirm origin server: `x-render-origin-server: Render`, `rndr-id: 572c95a9-bf19-46db`
+- **Conclusion**: Render service has not yet been re-linked / re-deployed from the updated GitHub `main` branch. Manual Render Dashboard action (Applying Blueprint or clearing build cache & redeploying from `https://github.com/charanjalluri/mingo.git`) is required.
+
+---
+
+## Separate Follow-Up Issue: Docker Compose Networking
+
+- **File**: `docker-compose.yml` & `frontend/vite.config.ts`
+- **Issue**: `frontend/vite.config.ts` sets Vite proxy targets to `http://127.0.0.1:8000` and `ws://127.0.0.1:8000`. When running local Docker Compose (`docker-compose up`), `127.0.0.1` inside the `frontend` container resolves locally within the frontend container, rather than pointing to the `backend` container (`http://backend:8000`).
+- **Impact**: Affects local multi-container `docker-compose up` setups (does not affect local dev via `npm run dev` or production single-container Dockerfile).
+- **Status**: Recorded as a separate follow-up enhancement.
+

@@ -195,7 +195,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ conversation, onBackMobi
               color: 'var(--text-primary)'
             }}
           />
-          <button type="button" onClick={() => setShowSearch(false)} style={{ color: 'var(--text-muted)' }}>
+          <button type="button" onClick={() => setShowSearch(false)} className="interactive-btn press-scale-sm" style={{ color: 'var(--text-muted)', padding: '4px', borderRadius: '50%' }} title="Close search">
             <X size={18} />
           </button>
         </form>

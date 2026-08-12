@@ -8,6 +8,7 @@ import { Check, CheckCheck, Smile, CornerUpLeft, Edit2, Trash2, Copy } from 'luc
 interface MessageBubbleProps {
   message: Message;
   isGroup: boolean;
+  sequencePosition?: 'single' | 'first' | 'middle' | 'last';
   onReply: (msg: Message) => void;
   onReaction: (msgId: string, emoji: string) => void;
   onEdit: (msg: Message) => void;
@@ -20,6 +21,7 @@ const QUICK_EMOJIS = ['❤️', '👍', '😂', '🔥', '🎉', '🚀'];
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   isGroup,
+  sequencePosition = 'single',
   onReply,
   onReaction,
   onEdit,
@@ -37,6 +39,39 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
   };
 
+  // Determine border radii based on sequence position and sender
+  const getBorderRadius = () => {
+    if (isSelf) {
+      switch (sequencePosition) {
+        case 'first':
+          return '18px 18px 6px 18px';
+        case 'middle':
+          return '18px 6px 6px 18px';
+        case 'last':
+          return '18px 6px 4px 18px';
+        case 'single':
+        default:
+          return '18px 18px 4px 18px';
+      }
+    } else {
+      switch (sequencePosition) {
+        case 'first':
+          return '18px 18px 18px 6px';
+        case 'middle':
+          return '6px 18px 18px 6px';
+        case 'last':
+          return '6px 18px 18px 4px';
+        case 'single':
+        default:
+          return '18px 18px 18px 4px';
+      }
+    }
+  };
+
+  const isGroupFirstInSequence = !isSelf && isGroup && (sequencePosition === 'single' || sequencePosition === 'first');
+  const marginTop = sequencePosition === 'middle' || sequencePosition === 'last' ? '1px' : '6px';
+  const marginBottom = sequencePosition === 'first' || sequencePosition === 'middle' ? '1px' : '6px';
+
   return (
     <div
       onMouseEnter={() => setShowActions(true)}
@@ -48,13 +83,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: isSelf ? 'flex-end' : 'flex-start',
-        margin: '6px 0',
+        marginTop,
+        marginBottom,
         position: 'relative',
         padding: '0 4px'
       }}
     >
-      {/* Sender display name for group chat */}
-      {!isSelf && isGroup && (
+      {/* Sender display name for group chat - only on first message of a sequence */}
+      {isGroupFirstInSequence && (
         <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '3px', marginLeft: '6px' }}>
           {message.sender_display_name}
         </span>
@@ -65,7 +101,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         position: 'relative',
         maxWidth: '82%',
         padding: message.message_type === 'image' ? '4px' : '10px 14px',
-        borderRadius: isSelf ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+        borderRadius: getBorderRadius(),
         backgroundColor: isSelf ? 'var(--bg-bubble-self)' : 'var(--bg-bubble-other)',
         color: isSelf ? 'var(--text-bubble-self)' : 'var(--text-bubble-other)',
         boxShadow: 'var(--shadow-sm)',
@@ -101,7 +137,16 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             <img
               src={message.media_url}
               alt="Shared Attachment"
+              role="button"
+              tabIndex={0}
               onClick={() => onOpenImage(message.media_url!)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onOpenImage(message.media_url!);
+                }
+              }}
+              className="press-scale-sm"
               style={{
                 width: '100%',
                 maxHeight: '320px',
@@ -156,27 +201,28 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             borderRadius: '9999px',
             padding: '4px 8px',
             boxShadow: 'var(--shadow-md)',
-            zIndex: 15
+            zIndex: 15,
+            animation: 'fadeIn 0.15s ease'
           }}>
-            <button onClick={() => setShowEmojiPicker((prev) => !prev)} style={{ padding: '4px', color: 'var(--text-secondary)' }} title="React">
+            <button onClick={() => setShowEmojiPicker((prev) => !prev)} className="interactive-btn" style={{ padding: '4px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }} title="React">
               <Smile size={16} />
             </button>
-            <button onClick={() => onReply(message)} style={{ padding: '4px', color: 'var(--text-secondary)' }} title="Reply">
+            <button onClick={() => onReply(message)} className="interactive-btn" style={{ padding: '4px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }} title="Reply">
               <CornerUpLeft size={16} />
             </button>
             {message.content && (
-              <button onClick={handleCopy} style={{ padding: '4px', color: 'var(--text-secondary)' }} title="Copy">
+              <button onClick={handleCopy} className="interactive-btn" style={{ padding: '4px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }} title="Copy">
                 <Copy size={16} />
               </button>
             )}
             {isSelf && (
               <>
                 {message.message_type === 'text' && (
-                  <button onClick={() => onEdit(message)} style={{ padding: '4px', color: 'var(--text-secondary)' }} title="Edit">
+                  <button onClick={() => onEdit(message)} className="interactive-btn" style={{ padding: '4px', borderRadius: 'var(--radius-sm)', color: 'var(--text-secondary)' }} title="Edit">
                     <Edit2 size={16} />
                   </button>
                 )}
-                <button onClick={() => onDelete(message.id)} style={{ padding: '4px', color: '#ef4444' }} title="Delete">
+                <button onClick={() => onDelete(message.id)} className="interactive-btn" style={{ padding: '4px', borderRadius: 'var(--radius-sm)', color: '#ef4444' }} title="Delete">
                   <Trash2 size={16} />
                 </button>
               </>
@@ -198,7 +244,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             borderRadius: '9999px',
             padding: '6px 12px',
             boxShadow: 'var(--shadow-lg)',
-            zIndex: 20
+            zIndex: 20,
+            animation: 'fadeIn 0.15s ease'
           }}>
             {QUICK_EMOJIS.map((emoji) => (
               <button
@@ -207,7 +254,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                   onReaction(message.id, emoji);
                   setShowEmojiPicker(false);
                 }}
-                style={{ fontSize: '1.2rem', cursor: 'pointer', transition: 'transform 0.1s' }}
+                className="press-scale-xs"
+                style={{ fontSize: '1.2rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', padding: '2px' }}
               >
                 {emoji}
               </button>
@@ -230,9 +278,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               return acc;
             }, {} as Record<string, number>)
           ).map(([emoji, count]) => (
-            <span
+            <button
               key={emoji}
               onClick={() => onReaction(message.id, emoji)}
+              className="press-scale-xs interactive-btn"
               style={{
                 padding: '2px 6px',
                 borderRadius: '9999px',
@@ -244,7 +293,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               }}
             >
               {emoji} {count > 1 ? count : ''}
-            </span>
+            </button>
           ))}
         </div>
       )}

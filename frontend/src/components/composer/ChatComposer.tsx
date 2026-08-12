@@ -153,7 +153,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSendMessage, onTyp
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             {selectedFile?.name}
           </span>
-          <button onClick={clearFile} style={{ color: 'var(--text-muted)' }}>
+          <button onClick={clearFile} className="interactive-btn" style={{ color: 'var(--text-muted)', padding: '4px', borderRadius: '50%' }} title="Remove file">
             <X size={16} />
           </button>
         </div>
@@ -187,6 +187,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSendMessage, onTyp
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               onClick={cancelRecording}
+              className="interactive-btn press-scale-sm"
               style={{
                 padding: '6px 12px',
                 borderRadius: 'var(--radius-md)',
@@ -201,6 +202,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSendMessage, onTyp
             <button
               onClick={handleSendVoice}
               disabled={isSubmitting}
+              className="press-scale-sm"
               style={{
                 padding: '6px 14px',
                 borderRadius: 'var(--radius-md)',
@@ -222,7 +224,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSendMessage, onTyp
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
           <button
             onClick={() => setShowEmoji((prev) => !prev)}
-            style={{ padding: '10px', color: 'var(--text-secondary)', flexShrink: 0 }}
+            className="interactive-btn press-scale-sm"
+            style={{ padding: '10px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)', flexShrink: 0 }}
             title="Emoji picker"
           >
             <Smile size={22} />
@@ -238,7 +241,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSendMessage, onTyp
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            style={{ padding: '10px', color: 'var(--text-secondary)', flexShrink: 0 }}
+            className="interactive-btn press-scale-sm"
+            style={{ padding: '10px', borderRadius: 'var(--radius-md)', color: 'var(--text-secondary)', flexShrink: 0 }}
             title="Attach image"
           >
             <Paperclip size={22} />
@@ -272,6 +276,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSendMessage, onTyp
             <button
               onClick={handleSend}
               disabled={isSubmitting}
+              className="press-scale-sm"
               style={{
                 padding: '10px',
                 borderRadius: 'var(--radius-md)',
@@ -290,6 +295,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({ onSendMessage, onTyp
           ) : (
             <button
               onClick={startRecording}
+              className="interactive-btn press-scale-sm"
               style={{
                 padding: '10px',
                 borderRadius: 'var(--radius-md)',

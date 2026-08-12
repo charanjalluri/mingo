@@ -95,7 +95,7 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ onClose }) => {
           <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             Profile & Settings
           </h2>
-          <button onClick={onClose} style={{ padding: '6px', color: 'var(--text-muted)' }}>
+          <button onClick={onClose} className="interactive-btn press-scale-sm" style={{ padding: '6px', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)' }} title="Close drawer">
             <X size={20} />
           </button>
         </div>
@@ -171,6 +171,7 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ onClose }) => {
             <button
               type="submit"
               disabled={savingProfile}
+              className="press-scale-sm"
               style={{
                 padding: '10px',
                 borderRadius: 'var(--radius-md)',
@@ -198,6 +199,7 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ onClose }) => {
                 </div>
                 <button
                   onClick={toggleTheme}
+                  className="interactive-btn press-scale-sm"
                   style={{
                     padding: '6px 12px',
                     borderRadius: 'var(--radius-md)',
@@ -288,6 +290,7 @@ export const ProfileDrawer: React.FC<ProfileDrawerProps> = ({ onClose }) => {
 
               <button
                 type="submit"
+                className="interactive-btn press-scale-sm"
                 style={{
                   padding: '8px',
                   borderRadius: 'var(--radius-md)',

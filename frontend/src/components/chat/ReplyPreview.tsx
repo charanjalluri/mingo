@@ -39,7 +39,9 @@ export const ReplyPreview: React.FC<ReplyPreviewProps> = ({ message, onCancel })
 
       <button
         onClick={onCancel}
+        className="interactive-btn press-scale-sm"
         style={{ padding: '4px', color: 'var(--text-muted)', borderRadius: '50%' }}
+        title="Cancel reply"
       >
         <X size={16} />
       </button>
